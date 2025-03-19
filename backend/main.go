@@ -3,32 +3,52 @@ package main
 import (
 	"os"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/nathaelb/authcrux/application"
+	"github.com/nathaelb/authcrux/application/service"
+	"github.com/nathaelb/authcrux/infrastructure/database"
+	"github.com/nathaelb/authcrux/infrastructure/repository"
+	"gorm.io/gorm"
 )
 
 func main() {
 	isProd := os.Getenv("ENV") == "production"
-	app := fiber.New()
+	setupLogger(isProd)
 
-	log.SetLevel(log.LevelInfo)
+	db, err := setupDatabase()
+	if err != nil {
+		log.Fatal("Error connecting to database: ", err)
+	}
 
-	app.Use(logger.New(logger.Config{
-		Format: func() string {
-			if isProd {
-				return `{"time":"${time}","status":${status},"latency":"${latency}","method":"${method}","path":"${path}"}` + "\n"
-			}
-			return "${time} | ${status} | ${latency} | ${method} ${path}\n"
-		}(),
-	}))
+	realmRepo := repository.NewPostgresRealmRepository(db)
+	realmService := service.NewRealmService(realmRepo)
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		log.Info("Traitement de la requête sur la route principale")
-		return c.SendString("Hello, World!")
-	})
+	httpServer := application.NewHTTPServer(realmService)
 
-	// Démarrage du serveur
-	log.Info("Démarrage du serveur sur le port 3000")
-	app.Listen(":3000")
+	log.Fatal(httpServer.Start())
+}
+
+func setupLogger(isProd bool) {
+	if isProd {
+		log.SetLevel(log.LevelInfo)
+	} else {
+		log.SetLevel(log.LevelDebug)
+	}
+}
+
+func setupDatabase() (*gorm.DB, error) {
+	log.Info("Connecting to database...")
+
+	dbConfig := database.NewDefaultConfig()
+	db, err := database.ConnectDatabase(dbConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Info("Migrate database...")
+	if err := database.MigrateDatabase(db); err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
