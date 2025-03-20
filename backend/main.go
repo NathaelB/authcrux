@@ -23,7 +23,10 @@ func main() {
 	realmRepo := repository.NewPostgresRealmRepository(db)
 	realmService := service.NewRealmService(realmRepo)
 
-	httpServer := application.NewHTTPServer(realmService)
+	clientRepo := repository.NewPostgresClientRepository(db)
+	clientService := service.NewClientService(clientRepo)
+
+	httpServer := application.NewHTTPServer(realmService, clientService)
 
 	log.Fatal(httpServer.Start())
 }

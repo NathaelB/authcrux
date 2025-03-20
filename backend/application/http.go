@@ -8,12 +8,15 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/nathaelb/authcrux/application/handler/realm"
+	"github.com/nathaelb/authcrux/application/handler/client_handler"
+	"github.com/nathaelb/authcrux/application/handler/realm_handler"
+	"github.com/nathaelb/authcrux/domain/client"
 	"github.com/nathaelb/authcrux/domain/port"
 )
 
 type Services struct {
-	realmService port.RealmService
+	realmService  port.RealmService
+	clientService client.ClientService
 }
 
 // HTTPServer encapsule le serveur HTTP et sa configuration
@@ -22,12 +25,13 @@ type HTTPServer struct {
 	isProd   bool
 	services Services
 	handlers struct {
-		realm *realm.RealmHandler
+		realm  *realm_handler.RealmHandler
+		client *client_handler.ClientHandler
 	}
 }
 
 // NewHTTPServer crée une nouvelle instance du serveur HTTP
-func NewHTTPServer(realmService port.RealmService) *HTTPServer {
+func NewHTTPServer(realmService port.RealmService, clientService client.ClientService) *HTTPServer {
 	// Déterminer l'environnement (production ou développement)
 	isProd := os.Getenv("ENV") == "production"
 
@@ -37,7 +41,8 @@ func NewHTTPServer(realmService port.RealmService) *HTTPServer {
 	})
 
 	services := Services{
-		realmService: realmService,
+		realmService:  realmService,
+		clientService: clientService,
 	}
 
 	s := &HTTPServer{
@@ -71,12 +76,13 @@ func NewHTTPServer(realmService port.RealmService) *HTTPServer {
 }
 
 func (s *HTTPServer) initHandlers() {
-	s.handlers.realm = realm.NewRealmHandler(s.services.realmService)
+	s.handlers.realm = realm_handler.NewRealmHandler(s.services.realmService)
+	s.handlers.client = client_handler.NewClientHandler(s.services.clientService)
 }
 
 func (s *HTTPServer) registerRoutes() {
 	s.handlers.realm.RegisterRoutes(s.app)
-
+	s.handlers.client.RegisterRoutes(s.app)
 	log.Info("Routes enregistrées avec succès")
 }
 

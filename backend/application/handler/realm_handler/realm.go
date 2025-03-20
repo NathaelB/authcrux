@@ -1,4 +1,4 @@
-package realm
+package realm_handler
 
 import (
 	"github.com/gofiber/fiber/v2"

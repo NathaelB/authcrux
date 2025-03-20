@@ -59,6 +59,7 @@ func ConnectDatabase(config *Config) (*gorm.DB, error) {
 func MigrateDatabase(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&gorm_model.Realm{},
+		&gorm_model.Client{},
 	)
 }
 

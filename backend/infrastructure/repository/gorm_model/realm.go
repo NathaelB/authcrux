@@ -7,8 +7,9 @@ import (
 )
 
 type Realm struct {
-	ID        string `gorm:"primaryKey;type:uuid"`
-	Name      string `gorm:"not null"`
+	ID        string   `gorm:"primaryKey;type:uuid"`
+	Name      string   `gorm:"not null"`
+	Clients   []Client `gorm:"foreignKey:RealmID;references:ID"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
