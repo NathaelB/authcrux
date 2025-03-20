@@ -1,4 +1,4 @@
-# AuthCrux - Keycloak Light in Go
+# AuthCrux - Keycloak Light in Rust
 
 ## Project goals
 
