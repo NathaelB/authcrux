@@ -1,27 +1,25 @@
 use std::sync::Arc;
 
-use axum::{Extension, Json, http::StatusCode};
+use axum::{Extension, http::StatusCode};
 use axum_macros::TypedPath;
-use serde::Deserialize;
 
 use crate::{
-    application::http::handlers::{ApiError, ApiSuccess},
+    application::http::{
+        errors::{ApiError, ValidateJson},
+        handlers::ApiSuccess,
+        validation::realm::CreateRealmValidator,
+    },
     domain::realm::{entities::model::Realm, ports::RealmService},
 };
 
-#[derive(Deserialize, TypedPath)]
+#[derive(TypedPath)]
 #[typed_path("/realms")]
 pub struct CreateRealmRoute;
-
-#[derive(Debug, Deserialize)]
-pub struct CreateRealmRequest {
-    pub name: String,
-}
 
 pub async fn create_realm<R: RealmService>(
     _: CreateRealmRoute,
     Extension(realm_service): Extension<Arc<R>>,
-    Json(payload): Json<CreateRealmRequest>,
+    ValidateJson(payload): ValidateJson<CreateRealmValidator>,
 ) -> Result<ApiSuccess<Realm>, ApiError> {
     realm_service
         .create_realm(payload.name)

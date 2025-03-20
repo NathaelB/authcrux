@@ -12,6 +12,7 @@ use super::state::AppState;
 pub mod errors;
 pub mod handlers;
 pub mod responses;
+pub mod validation;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HttpServerConfig {

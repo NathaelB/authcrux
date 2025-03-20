@@ -1,7 +1,5 @@
-use crate::application::http::responses::ApiResponseError;
 use axum::{Json, http::StatusCode, response::IntoResponse};
 use serde::Serialize;
-
 pub mod realm;
 
 pub struct ApiSuccess<T: Serialize + PartialEq>(StatusCode, Json<ApiResponseBody<T>>);
@@ -16,7 +14,7 @@ where
 }
 
 impl<T: Serialize + PartialEq> ApiSuccess<T> {
-    fn new(status: StatusCode, data: T) -> Self {
+    pub fn new(status: StatusCode, data: T) -> Self {
         ApiSuccess(status, Json(ApiResponseBody::new(status, data)))
     }
 }
@@ -24,26 +22,6 @@ impl<T: Serialize + PartialEq> ApiSuccess<T> {
 impl<T: Serialize + PartialEq> IntoResponse for ApiSuccess<T> {
     fn into_response(self) -> axum::response::Response {
         (self.0, self.1).into_response()
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ApiError {
-    InternalServerError(String),
-    UnProcessableEntity(String),
-    NotFound(String),
-    Unauthorized(String),
-    Forbidden(String),
-}
-
-impl From<anyhow::Error> for ApiError {
-    fn from(e: anyhow::Error) -> Self {
-        match e {
-            e if e.to_string().contains("validation error") => {
-                Self::UnProcessableEntity(e.to_string())
-            }
-            _ => Self::InternalServerError(e.to_string()),
-        }
     }
 }
 
@@ -74,49 +52,4 @@ impl ApiResponseBody<ApiErrorData> {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ApiErrorData {
     pub message: String,
-}
-
-impl IntoResponse for ApiError {
-    fn into_response(self) -> axum::response::Response {
-        match self {
-            ApiError::InternalServerError(e) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(ApiResponseBody::new_error(
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    format!("Internal Server Error: {}", e),
-                )),
-            )
-                .into_response(),
-            ApiError::UnProcessableEntity(errors) => {
-                (StatusCode::UNPROCESSABLE_ENTITY, Json(errors)).into_response()
-            }
-            ApiError::NotFound(message) => (
-                StatusCode::NOT_FOUND,
-                Json(ApiResponseError {
-                    code: "E_NOT_FOUND".to_string(),
-                    status: 404,
-                    message,
-                }),
-            )
-                .into_response(),
-            ApiError::Unauthorized(message) => (
-                StatusCode::UNAUTHORIZED,
-                Json(ApiResponseError {
-                    code: "E_UNAUTHORIZED".to_string(),
-                    status: 403,
-                    message,
-                }),
-            )
-                .into_response(),
-            ApiError::Forbidden(message) => (
-                StatusCode::FORBIDDEN,
-                Json(ApiResponseError {
-                    code: "E_FORBIDDEN".to_string(),
-                    status: 403,
-                    message,
-                }),
-            )
-                .into_response(),
-        }
-    }
 }
