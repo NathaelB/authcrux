@@ -1,0 +1,42 @@
+use std::sync::Arc;
+
+use crate::{
+    domain::realm::{
+        entities::{error::RealmError, model::Realm},
+        ports::RealmRepository,
+    },
+    infrastructure::db::postgres::Postgres,
+};
+
+#[derive(Debug, Clone)]
+pub struct PostgresRealmRepository {
+    pub postgres: Arc<Postgres>,
+}
+
+impl PostgresRealmRepository {
+    pub fn new(postgres: Arc<Postgres>) -> Self {
+        Self { postgres }
+    }
+}
+
+impl RealmRepository for PostgresRealmRepository {
+    async fn create_realm(&self, name: String) -> Result<Realm, RealmError> {
+        let realm = Realm::new(name);
+
+        sqlx::query!(
+            r#"
+      INSERT INTO realms (id, name, created_at, updated_at)
+      VALUES ($1, $2, $3, $4)
+      "#,
+            realm.id,
+            realm.name,
+            realm.created_at,
+            realm.updated_at
+        )
+        .execute(&*self.postgres.get_pool())
+        .await
+        .map_err(|_| RealmError::InternalServerError)?;
+
+        Ok(realm)
+    }
+}

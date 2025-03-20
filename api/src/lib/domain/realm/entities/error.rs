@@ -8,4 +8,6 @@ pub enum RealmError {
     AlreadyExists,
     #[error("Invalid realm")]
     Invalid,
+    #[error("Internal server error")]
+    InternalServerError,
 }
