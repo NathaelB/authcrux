@@ -12,6 +12,9 @@ pub struct Env {
     #[clap(env)]
     pub port: String,
 
+    #[clap(env)]
+    pub database_url: String,
+
     #[clap(env, default_value = "development", value_enum)]
     pub env: AppEnv,
 }

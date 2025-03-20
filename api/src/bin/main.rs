@@ -1,6 +1,10 @@
 use std::sync::Arc;
 
-use authcrux::{application::http::{HttpServer, HttpServerConfig}, env::{AppEnv, Env}};
+use authcrux::{
+    application::http::{HttpServer, HttpServerConfig},
+    env::{AppEnv, Env},
+    infrastructure::db::postgres::Postgres,
+};
 use clap::Parser;
 
 fn init_logger(env: Arc<Env>) {
@@ -23,6 +27,8 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let env = Arc::new(Env::parse());
     init_logger(Arc::clone(&env));
+
+    let _ = Postgres::new(Arc::clone(&env)).await?;
 
     let server_config = HttpServerConfig::new(env.port.clone());
 
