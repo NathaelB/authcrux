@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use authcrux::env::{AppEnv, Env};
+use authcrux::{application::http::{HttpServer, HttpServerConfig}, env::{AppEnv, Env}};
 use clap::Parser;
 
 fn init_logger(env: Arc<Env>) {
@@ -23,7 +23,11 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let env = Arc::new(Env::parse());
     init_logger(Arc::clone(&env));
-    
+
+    let server_config = HttpServerConfig::new(env.port.clone());
+
+    let http_server = HttpServer::new(server_config).await?;
+    http_server.run().await?;
     println!("Hello AuthCrux");
 
     Ok(())
