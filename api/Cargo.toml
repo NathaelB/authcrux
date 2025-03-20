@@ -8,12 +8,17 @@ authors = ["nathaelb <pro.nathaelbonnal@gmail.com>"]
 path = "src/bin/main.rs"
 name = "authcrux-server"
 
+[lib]
+path = "src/lib/lib.rs"
+name = "authcrux"
+
 [dependencies]
 anyhow = "1.0.97"
 axum = "0.8.1"
 axum-extra = "0.10.0"
 axum-macros = "0.5.0"
-clap = "4.5.32"
+clap = { version = "4.5.32", features = ["derive", "env"] }
+dotenv = "0.15.0"
 serde = "1.0.219"
 sqlx = "0.8.3"
 thiserror = "2.0.12"
@@ -21,4 +26,4 @@ tokio = { version = "1.44.1", features = ["rt-multi-thread"] }
 tower = "0.5.2"
 tower-http = "0.6.2"
 tracing = "0.1.41"
-tracing-subscriber = "0.3.19"
+tracing-subscriber = { version = "0.3.19", features = ["json"] }
