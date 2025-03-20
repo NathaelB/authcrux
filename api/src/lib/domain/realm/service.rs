@@ -27,4 +27,11 @@ where
     async fn create_realm(&self, name: String) -> Result<Realm, RealmError> {
         self.realm_repository.create_realm(name).await
     }
+
+    async fn get_by_name(&self, name: String) -> Result<Realm, RealmError> {
+        self.realm_repository
+            .get_by_name(name)
+            .await?
+            .ok_or(RealmError::NotFound)
+    }
 }

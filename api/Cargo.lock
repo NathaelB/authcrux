@@ -111,7 +111,6 @@ dependencies = [
  "axum",
  "axum-extra",
  "axum-macros",
- "axum-valid",
  "chrono",
  "clap",
  "dotenv",
@@ -232,16 +231,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "axum-valid"
-version = "0.23.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f0315c61f53843466eb1e7eeaf702a5e6a8aee507c5f7d72a7f35a8fc2e2753"
-dependencies = [
- "axum",
- "validator",
 ]
 
 [[package]]

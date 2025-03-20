@@ -39,4 +39,13 @@ impl RealmRepository for PostgresRealmRepository {
 
         Ok(realm)
     }
+
+    async fn get_by_name(&self, name: String) -> Result<Option<Realm>, RealmError> {
+        let realm = sqlx::query_as!(Realm, r#"SELECT * FROM realms WHERE name = $1"#, name)
+            .fetch_optional(&*self.postgres.get_pool())
+            .await
+            .map_err(|_| RealmError::InternalServerError)?;
+
+        Ok(realm)
+    }
 }
